@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "basic_tts",
+      "input": {
+        "text": "Welcome to your daily wellness moment."
+      },
+      "timeout": 60000
+    },
+    {
+      "name": "emotion_tts",
+      "input": {
+        "text": "[calm] Take a deep breath and relax.",
+        "temperature": 0.5,
+        "speed": 0.9
+      },
+      "timeout": 60000
+    }
+  ],
+  "config": {
+    "gpuTypeId": "NVIDIA GeForce RTX 4090",
+    "gpuCount": 1,
+    "env": [],
+    "allowedCudaVersions": [
+      "12.7",
+      "12.6",
+      "12.5",
+      "12.4",
+      "12.3",
+      "12.2",
+      "12.1"
+    ]
+  }
+}

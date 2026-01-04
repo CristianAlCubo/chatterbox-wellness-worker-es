@@ -1,0 +1,17 @@
+{
+  "title": "Chatterbox Wellness TTS",
+  "description": "Text-to-Speech worker using Chatterbox with emotion control and voice cloning for wellness content narration",
+  "type": "serverless",
+  "category": "audio",
+  "config": {
+    "runsOn": "GPU",
+    "containerDiskInGb": 20,
+    "presets": [
+      {
+        "name": "Default TTS",
+        "defaults": {}
+      }
+    ],
+    "env": []
+  }
+}
