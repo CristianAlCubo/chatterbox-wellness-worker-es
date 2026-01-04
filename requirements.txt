@@ -1,0 +1,12 @@
+# RunPod SDK
+runpod>=1.6.0
+
+# Audio processing
+soundfile>=0.12.0
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Chatterbox TTS
+chatterbox-tts>=0.1.0
+
+# Note: PyTorch is installed in Dockerfile with CUDA support
