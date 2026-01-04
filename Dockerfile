@@ -37,8 +37,8 @@ RUN pip install --no-cache-dir runpod requests soundfile numpy scipy
 # Copy handler
 COPY handler.py /app/handler.py
 
-# Pre-download model on build (optional - can also download on first run)
-RUN python -c "from chatterbox.tts import ChatterboxTTS; ChatterboxTTS.from_pretrained()" || true
+# Pre-download model during build (required for fast startup)
+RUN python -c "from chatterbox.tts import ChatterboxTTS; print('Downloading Chatterbox model...'); model = ChatterboxTTS.from_pretrained(); print('Model downloaded successfully')"
 
 # Start handler
 CMD ["python", "-u", "/app/handler.py"]
