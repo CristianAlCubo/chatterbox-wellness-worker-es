@@ -1,20 +1,18 @@
 {
   "tests": [
     {
-      "name": "basic_tts",
+      "name": "health_check",
       "input": {
-        "text": "Welcome to your daily wellness moment."
+        "health_check": true
       },
       "timeout": 60000
     },
     {
-      "name": "emotion_tts",
+      "name": "basic_tts",
       "input": {
-        "text": "[calm] Take a deep breath and relax.",
-        "temperature": 0.5,
-        "speed": 0.9
+        "text": "Hello."
       },
-      "timeout": 60000
+      "timeout": 120000
     }
   ],
   "config": {

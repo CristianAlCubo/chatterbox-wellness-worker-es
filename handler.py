@@ -100,6 +100,14 @@ def handler(job: dict) -> dict:
 
     job_input = job.get("input", {})
 
+    # Health check - respond immediately without generating audio
+    if job_input.get("health_check"):
+        return {
+            "status": "healthy",
+            "message": "Chatterbox TTS handler ready",
+            "model_loaded": tts_model is not None
+        }
+
     # Required: text to synthesize
     text = job_input.get("text", "")
     if not text:
