@@ -42,7 +42,8 @@ RUN python3.11 -m pip install --no-cache-dir runpod requests soundfile numpy sci
 COPY handler.py /app/handler.py
 
 # Pre-download model during build (required for fast startup)
-RUN python3.11 -c "from chatterbox.tts import ChatterboxTTS; print('Downloading Chatterbox model...'); model = ChatterboxTTS.from_pretrained(); print('Model downloaded successfully')"
+# Use 'cpu' during build since GPU isn't available, model will use 'cuda' at runtime
+RUN python3.11 -c "from chatterbox.tts import ChatterboxTTS; print('Downloading Chatterbox model...'); model = ChatterboxTTS.from_pretrained(device='cpu'); print('Model downloaded successfully')"
 
 # Start handler
 CMD ["python3.11", "-u", "/app/handler.py"]
