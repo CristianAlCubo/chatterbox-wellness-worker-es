@@ -27,7 +27,7 @@ RunPod Serverless worker for Chatterbox Multilingual Text-to-Speech with voice c
 
 ### 3. Environment Variables
 
-None required.
+None required. The container already enforces `TRANSFORMERS_ATTN_IMPLEMENTATION=eager`.
 
 ## API Usage
 
@@ -141,6 +141,23 @@ For best voice cloning results:
 - Minimal background noise
 - Single speaker only
 - Natural speaking pace
+
+## Troubleshooting
+
+### Error: output_attentions with sdpa
+
+If you see this error:
+
+`The output_attentions attribute is not supported when using the attn_implementation set to sdpa`
+
+this worker is expected to avoid it by forcing `eager` attention at runtime and image level.
+
+To validate runtime config, call `health_check` and verify:
+- `attention_backend` is `eager`
+- `transformers_version` is present
+- `model_loaded` is `true` after warmup
+
+If `attention_backend` is not `eager`, redeploy the image and confirm you are running the latest tag.
 
 ## Local Development
 

@@ -21,16 +21,16 @@ WORKDIR /app
 RUN pip install --no-cache-dir --no-deps chatterbox-tts
 
 # Install chatterbox dependencies (from reference: github.com/geronimi73/runpod_chatterbox)
-# These are installed without version pins to work with the base image's PyTorch
+# Sensitive inference deps are pinned for production stability.
 RUN pip install --no-cache-dir \
     conformer \
     s3tokenizer \
     librosa \
     resemble-perth \
     huggingface_hub \
-    safetensors \
-    transformers \
-    diffusers \
+    safetensors==0.5.3 \
+    transformers==4.46.3 \
+    diffusers==0.29.0 \
     einops \
     soundfile \
     scipy \
@@ -39,6 +39,9 @@ RUN pip install --no-cache-dir \
 
 # Install RunPod SDK
 RUN pip install --no-cache-dir runpod
+
+# Force eager attention backend at container runtime.
+ENV TRANSFORMERS_ATTN_IMPLEMENTATION=eager
 
 # Copy handler
 COPY handler.py /app/handler.py

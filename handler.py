@@ -17,12 +17,42 @@ import torch
 import soundfile as sf
 import numpy as np
 
+# Force eager attention backend to avoid sdpa/output_attentions incompatibility.
+os.environ["TRANSFORMERS_ATTN_IMPLEMENTATION"] = "eager"
+
 # Global model instance (loaded once per worker)
 tts_model = None
 SUPPORTED_LANGUAGES = {
     "ar", "da", "de", "el", "en", "es", "fi", "fr", "he", "hi", "it", "ja",
     "ko", "ms", "nl", "no", "pl", "pt", "ru", "sv", "sw", "tr", "zh",
 }
+
+
+def get_transformers_version() -> str:
+    """Get transformers runtime version for diagnostics."""
+    try:
+        import transformers
+        return transformers.__version__
+    except Exception:
+        return "unknown"
+
+
+def resolve_attention_backend(model=None) -> str:
+    """Resolve effective attention backend from model/runtime."""
+    if model is not None:
+        t3_model = getattr(model, "t3", None)
+        config_candidates = [
+            getattr(t3_model, "cfg", None),
+            getattr(getattr(t3_model, "tfmr", None), "config", None),
+        ]
+        for config in config_candidates:
+            if config is None:
+                continue
+            for attr_name in ("attn_implementation", "_attn_implementation"):
+                backend = getattr(config, attr_name, None)
+                if backend:
+                    return str(backend)
+    return os.environ.get("TRANSFORMERS_ATTN_IMPLEMENTATION", "unknown")
 
 
 def load_model():
@@ -35,11 +65,25 @@ def load_model():
     print("[Handler] Loading Chatterbox Multilingual TTS model...")
 
     from chatterbox.mtl_tts import ChatterboxMultilingualTTS
+    from chatterbox.models.t3.llama_configs import LLAMA_CONFIGS
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"[Handler] Using device: {device}")
+    print(f"[Handler] Transformers version: {get_transformers_version()}")
+
+    # Chatterbox multilingual defaults to sdpa in LLAMA_CONFIGS.
+    # Override at runtime so output_attentions paths are always supported.
+    llama_config = LLAMA_CONFIGS.get("Llama_520M")
+    if isinstance(llama_config, dict):
+        llama_config["attn_implementation"] = "eager"
 
     tts_model = ChatterboxMultilingualTTS.from_pretrained(device=device)
+    attention_backend = resolve_attention_backend(tts_model)
+    print(f"[Handler] Effective attention backend: {attention_backend}")
+    if attention_backend != "eager":
+        raise RuntimeError(
+            f"Invalid attention backend '{attention_backend}'. Expected 'eager'."
+        )
 
     print("[Handler] Model loaded successfully")
     return tts_model
@@ -109,7 +153,9 @@ def handler(job: dict) -> dict:
         return {
             "status": "healthy",
             "message": "Chatterbox Multilingual TTS handler ready",
-            "model_loaded": tts_model is not None
+            "model_loaded": tts_model is not None,
+            "attention_backend": resolve_attention_backend(tts_model),
+            "transformers_version": get_transformers_version(),
         }
 
     # Required: text to synthesize
