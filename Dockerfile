@@ -43,8 +43,10 @@ RUN pip install --no-cache-dir runpod
 # Copy handler
 COPY handler.py /app/handler.py
 
-# Pre-download model during build
-RUN python -c "from chatterbox.tts import ChatterboxTTS; print('Downloading Chatterbox model...'); model = ChatterboxTTS.from_pretrained(device='cpu'); print('Model downloaded successfully')"
+# Multilingual model preload at build time is disabled.
+# ChatterboxMultilingualTTS currently fails to initialize on CPU-only build environments
+# because some checkpoint tensors are serialized for CUDA.
+# The model is loaded at worker startup on RunPod (GPU runtime).
 
 # Start handler
 CMD ["python", "-u", "/app/handler.py"]

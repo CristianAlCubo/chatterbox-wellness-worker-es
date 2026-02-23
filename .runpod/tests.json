@@ -13,6 +13,14 @@
         "text": "Hello."
       },
       "timeout": 120000
+    },
+    {
+      "name": "multilingual_spanish_tts",
+      "input": {
+        "text": "Hola, esta es una prueba de sintesis en espanol.",
+        "language_id": "es"
+      },
+      "timeout": 120000
     }
   ],
   "config": {

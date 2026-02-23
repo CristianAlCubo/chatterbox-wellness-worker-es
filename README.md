@@ -1,12 +1,13 @@
-# Chatterbox TTS Wellness Worker
+# Chatterbox Multilingual TTS Wellness Worker
 
 [![RunPod](https://api.runpod.io/badge/profzeller/chatterbox-wellness-worker)](https://console.runpod.io/hub/profzeller/chatterbox-wellness-worker)
 
-RunPod Serverless worker for Chatterbox Text-to-Speech with voice cloning.
+RunPod Serverless worker for Chatterbox Multilingual Text-to-Speech with voice cloning.
 
 ## Capabilities
 
 - **Text-to-Speech** - Natural speech synthesis
+- **Multilingual Synthesis** - Select output language with `language_id` (including Spanish)
 - **Voice Cloning** - Clone any voice from a reference audio sample
 - **Emotion Tags** - Control emotion in speech
 - **Speed Control** - Adjust playback speed
@@ -22,11 +23,11 @@ RunPod Serverless worker for Chatterbox Text-to-Speech with voice cloning.
 3. GPU: RTX 4090 or similar (8GB+ VRAM sufficient)
 4. Max Workers: 1-2
 5. Idle Timeout: 5 seconds
-6. No network volume needed (model is ~3GB, included in Docker image)
+6. No network volume needed (model is downloaded to local cache on first startup)
 
 ### 3. Environment Variables
 
-None required - model is bundled.
+None required.
 
 ## API Usage
 
@@ -35,7 +36,19 @@ None required - model is bundled.
 ```json
 {
   "input": {
-    "text": "Welcome to your daily wellness moment. Take a deep breath."
+    "text": "Welcome to your daily wellness moment. Take a deep breath.",
+    "language_id": "en"
+  }
+}
+```
+
+### Multilingual (Spanish Example)
+
+```json
+{
+  "input": {
+    "text": "Bienvenido a tu momento diario de bienestar. Respira profundamente.",
+    "language_id": "es"
   }
 }
 ```
@@ -46,6 +59,7 @@ None required - model is bundled.
 {
   "input": {
     "text": "Hello, this is my cloned voice speaking.",
+    "language_id": "en",
     "reference_audio_url": "https://example.com/my-voice-sample.wav"
   }
 }
@@ -57,6 +71,7 @@ Or with base64 audio:
 {
   "input": {
     "text": "Hello, this is my cloned voice speaking.",
+    "language_id": "en",
     "reference_audio_base64": "UklGRi..."
   }
 }
@@ -80,6 +95,7 @@ Supported emotions: `happy`, `sad`, `angry`, `surprised`, `neutral`, `calm`
 {
   "input": {
     "text": "This is a calm meditation guide.",
+    "language_id": "en",
     "temperature": 0.5,
     "exaggeration": 0.8,
     "speed": 0.9,
@@ -90,6 +106,7 @@ Supported emotions: `happy`, `sad`, `angry`, `surprised`, `neutral`, `calm`
 
 | Parameter | Default | Range | Description |
 |-----------|---------|-------|-------------|
+| `language_id` | `en` | `ar`, `da`, `de`, `el`, `en`, `es`, `fi`, `fr`, `he`, `hi`, `it`, `ja`, `ko`, `ms`, `nl`, `no`, `pl`, `pt`, `ru`, `sv`, `sw`, `tr`, `zh` | Language code for multilingual synthesis |
 | `temperature` | 0.7 | 0.0-1.0 | Creativity/variability |
 | `exaggeration` | 1.0 | 0.5-2.0 | Emotion intensity |
 | `speed` | 1.0 | 0.5-2.0 | Playback speed |
@@ -103,7 +120,8 @@ Supported emotions: `happy`, `sad`, `angry`, `surprised`, `neutral`, `calm`
   "sample_rate": 24000,
   "duration_seconds": 3.5,
   "text": "The synthesized text",
-  "emotion": "happy"
+  "emotion": "happy",
+  "language_id": "en"
 }
 ```
 

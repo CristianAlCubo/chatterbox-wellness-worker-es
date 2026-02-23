@@ -19,23 +19,27 @@ import numpy as np
 
 # Global model instance (loaded once per worker)
 tts_model = None
+SUPPORTED_LANGUAGES = {
+    "ar", "da", "de", "el", "en", "es", "fi", "fr", "he", "hi", "it", "ja",
+    "ko", "ms", "nl", "no", "pl", "pt", "ru", "sv", "sw", "tr", "zh",
+}
 
 
 def load_model():
-    """Load Chatterbox TTS model."""
+    """Load Chatterbox Multilingual TTS model."""
     global tts_model
 
     if tts_model is not None:
         return tts_model
 
-    print("[Handler] Loading Chatterbox TTS model...")
+    print("[Handler] Loading Chatterbox Multilingual TTS model...")
 
-    from chatterbox.tts import ChatterboxTTS
+    from chatterbox.mtl_tts import ChatterboxMultilingualTTS
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"[Handler] Using device: {device}")
 
-    tts_model = ChatterboxTTS.from_pretrained(device=device)
+    tts_model = ChatterboxMultilingualTTS.from_pretrained(device=device)
 
     print("[Handler] Model loaded successfully")
     return tts_model
@@ -104,7 +108,7 @@ def handler(job: dict) -> dict:
     if job_input.get("health_check"):
         return {
             "status": "healthy",
-            "message": "Chatterbox TTS handler ready",
+            "message": "Chatterbox Multilingual TTS handler ready",
             "model_loaded": tts_model is not None
         }
 
@@ -119,6 +123,7 @@ def handler(job: dict) -> dict:
 
     # Optional: emotion override (if not in text tags)
     emotion = job_input.get("emotion")
+    language_id = job_input.get("language_id", "en")
 
     # Optional: generation parameters
     temperature = job_input.get("temperature", 0.7)
@@ -131,6 +136,14 @@ def handler(job: dict) -> dict:
     if text_emotion and not emotion:
         emotion = text_emotion
         text = clean_text
+
+    if language_id not in SUPPORTED_LANGUAGES:
+        return {
+            "error": (
+                f"Unsupported language_id '{language_id}'. "
+                f"Supported values: {', '.join(sorted(SUPPORTED_LANGUAGES))}"
+            )
+        }
 
     try:
         # Load model
@@ -148,12 +161,16 @@ def handler(job: dict) -> dict:
 
         # Generate speech
         print(f"[Handler] Generating speech for: {text[:50]}...")
-        print(f"[Handler] Emotion: {emotion}, Temp: {temperature}, Speed: {speed}")
+        print(
+            f"[Handler] Language: {language_id}, Emotion: {emotion}, "
+            f"Temp: {temperature}, Speed: {speed}"
+        )
 
         if ref_audio_path:
             # Voice cloning mode
             audio = model.generate(
                 text=text,
+                language_id=language_id,
                 audio_prompt_path=ref_audio_path,
                 temperature=temperature,
                 exaggeration=exaggeration,
@@ -165,6 +182,7 @@ def handler(job: dict) -> dict:
             # Default voice mode
             audio = model.generate(
                 text=text,
+                language_id=language_id,
                 temperature=temperature,
                 exaggeration=exaggeration,
                 cfg_weight=cfg_weight,
@@ -198,6 +216,7 @@ def handler(job: dict) -> dict:
             "duration_seconds": len(audio) / 24000,
             "text": text,
             "emotion": emotion,
+            "language_id": language_id,
         }
 
     except Exception as e:
